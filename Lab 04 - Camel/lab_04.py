@@ -75,6 +75,9 @@ def main():
         elif choice == 6:
             print("You have Quit the game. GG")
             done = True
+        else:
+            print("Enter valid option")
+            done = False
         if Thirst == 5 and Camel_tiredness <= 8 and Miles_traveled < 200:
             print("You are thirsty!")
         elif Thirst > 5:
