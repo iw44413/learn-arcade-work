@@ -90,7 +90,8 @@ def main():
             done = True
         elif Miles_traveled - Distance_natives_traveled < 16 and Distance_natives_traveled < Miles_traveled:
             print("The natives are catching up")
-        elif Miles_traveled > 199:
-            print("You have escaped the natives. Congratulations")
+        if Miles_traveled > 199:
+            print("You have escaped the natives. Congratulations!!!")
+            done = True
 
 main()
