@@ -75,12 +75,12 @@ def main():
         elif choice == 6:
             print("You have Quit the game. GG")
             done = True
-        elif Thirst == 5:
+        if Thirst == 5 and Camel_tiredness <= 8 and Miles_traveled < 200:
             print("You are thirsty!")
         elif Thirst > 5:
             print("You have died of thirst")
             done = True
-        elif Camel_tiredness > 5:
+        if Camel_tiredness > 5 and Thirst < 5:
             print("Your camel is tired")
         elif Camel_tiredness >8:
             print("Your camel died. GG")
