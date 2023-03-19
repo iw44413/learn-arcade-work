@@ -5,15 +5,11 @@ class Room:
         self.east = east
         self.south = south
         self.west = west
-
-# not in class!
 def main():
     room_list = []
     current_room = 0
     next_room = 0
     done = False
-
-    # Bedroom 2 - 0 - (description, north, east, south, west)
     room = Room("You are in the Kitchen, there is a door to the east.", None, 1, None, None)
     room_list.append(room)
     room = Room("You are in the North Hall, there is a door to the east, south, and west.", None, 2, 4, 0)
@@ -26,9 +22,6 @@ def main():
     room_list.append(room)
     room = Room("You are in the Third Bedroom, there is a door to the north..", 4, None, None, None)
     room_list.append(room)
-
-    # add rest of the rooms
-
     while not done:
         print(room_list[current_room].description)
         direction = input("Which way would you like to go? (n s e w)").lower()
@@ -44,10 +37,10 @@ def main():
             print("You have quit the game. GG")
             break
         else:
-            print("Please pick a valid direction.")
+            print("You can only go n s e w or q to quit.")
             continue
         if next_room == None:
-            print("You can't go that way!")
+            print("Please pick a direction you actually can go :]")
             continue
         current_room = next_room
 
