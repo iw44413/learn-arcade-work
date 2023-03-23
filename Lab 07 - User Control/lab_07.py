@@ -3,7 +3,7 @@ import arcade
 SPRITE_SCALING_PLAYER = 2.5
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
-skip_sound = arcade.load_sound("kingcrimson.mp3")
+skip_sound = arcade.load_sound("../kingcrimson.mp3")
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Sprite Example")
@@ -28,7 +28,7 @@ class MyGame(arcade.Window):
         self.player_Aero.center_y = 350
         self.player_list.append(self.player_Aero)
 
-        self.player_Bc = arcade.Sprite("Bc1R.png", SPRITE_SCALING_PLAYER)
+        self.player_Bc = arcade.Sprite("../Bc1R.png", SPRITE_SCALING_PLAYER)
         self.player_Bc.center_x = 50
         self.player_Bc.center_y = 50
         self.player_list.append(self.player_Bc)

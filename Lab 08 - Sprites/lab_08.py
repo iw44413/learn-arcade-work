@@ -4,6 +4,7 @@ SPRITE_SCALING_PLAYER = 2.5
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 skip_sound = arcade.load_sound("kingcrimson.mp3")
+Movement_speed = 5
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Sprite Example")
@@ -17,22 +18,31 @@ class MyGame(arcade.Window):
 
         arcade.set_background_color(arcade.color.AMAZON)
 
-    def setup(self, change_x=3,change_y=3):
+    def setup(self, change_x=3, change_y=3):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
 
         # Set up the player
         # Character image from kenney.nl
-        self.player_Aero = arcade.Sprite("Aerosmithl1.png", SPRITE_SCALING_PLAYER)
+        Plane = "Aerosmithl1.png"
+        Tank = "Bc1R.png"
+        self.player_Aero = arcade.Sprite(Plane, SPRITE_SCALING_PLAYER)
         self.player_Aero.center_x = 50
         self.player_Aero.center_y = 350
         self.player_list.append(self.player_Aero)
 
-        self.player_Bc = arcade.Sprite("Bc1R.png", SPRITE_SCALING_PLAYER)
+
+        self.player_Bc = arcade.Sprite(Tank, SPRITE_SCALING_PLAYER)
         self.player_Bc.center_x = 50
         self.player_Bc.center_y = 50
+        self.player_Bc.change_x = change_x
+        self.player_Bc.change_y = change_y
         self.player_list.append(self.player_Bc)
+
+
+
+
 
     def on_draw(self):
         arcade.start_render()
@@ -88,12 +98,14 @@ class MyGame(arcade.Window):
         arcade.draw_triangle_filled(800, 200, 900, 200, 850, 350, (42, 126, 25))
         arcade.draw_triangle_filled(800, 175, 900, 175, 850, 350, (42, 126, 25))
         self.player_list.draw()
-        if self.player_Bc.center_x > 800:
+        if self.player_Bc.center_x > 1000:
             self.player_Bc.center_x = 0
             arcade.play_sound(skip_sound)
         if self.player_Bc.center_x < 0:
-            self.player_Bc.center_x = 800
+            self.player_Bc.center_x = 1000
             arcade.play_sound(skip_sound)
+
+
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.player_Aero.center_x = x
