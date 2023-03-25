@@ -6,7 +6,6 @@ SCREEN_HEIGHT = 600
 skip_sound = arcade.load_sound("kingcrimson.mp3")
 Movement_speed = 5
 COIN_COUNT = 25
-Plane_count
 SPRITE_SCALING_COIN = 1
 
 
@@ -18,12 +17,16 @@ class Coin(arcade.Sprite):
 
         if self.center_y < 0:
             self.center_y = SCREEN_HEIGHT
+
+
+
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Sprite Example")
 
         self.player_list = None
         self.coin_list = None
+        self.mini_plane_list = None
 
         self.player_sprite = None
         self.score = 0
@@ -64,6 +67,19 @@ class MyGame(arcade.Window):
 
             # Add the coin to the lists
             self.coin_list.append(coin)
+
+
+        for i in range(COIN_COUNT):
+            # Create the coin instance
+            # Coin image from kenney.nl
+            mini = Coin("Aerosmithl1.png", SPRITE_SCALING_COIN)
+
+            # Position the coin
+            mini.center_x = random.randrange(SCREEN_WIDTH)
+            mini.center_y = random.randrange(SCREEN_HEIGHT)
+
+            # Add the coin to the lists
+            self.coin_list.append(mini)
 
 
 
@@ -152,6 +168,13 @@ class MyGame(arcade.Window):
             coin.remove_from_sprite_lists()
             self.score += 1
 
+        hit_list = arcade.check_for_collision_with_list(self.player_Aero,
+                                                        self.coin_list)
+
+        # Loop through each colliding sprite, remove it, and add to the score.
+        for coin in hit_list:
+            coin.remove_from_sprite_lists()
+            self.score -= 1
 
     def on_mouse_motion(self, x, y, dx, dy):
         self.player_Aero.center_x = x
