@@ -5,6 +5,19 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 skip_sound = arcade.load_sound("kingcrimson.mp3")
 Movement_speed = 5
+COIN_COUNT = 25
+Plane_count
+SPRITE_SCALING_COIN = 1
+
+
+
+class Coin(arcade.Sprite):
+
+    def update(self):
+        self.center_y -= 1
+
+        if self.center_y < 0:
+            self.center_y = SCREEN_HEIGHT
 class MyGame(arcade.Window):
     def __init__(self):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, "Sprite Example")
@@ -13,6 +26,7 @@ class MyGame(arcade.Window):
         self.coin_list = None
 
         self.player_sprite = None
+        self.score = 0
 
         self.set_mouse_visible(False)
 
@@ -22,6 +36,7 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_list = arcade.SpriteList()
+        self.coin_list = arcade.SpriteList()
 
         # Set up the player
         # Character image from kenney.nl
@@ -37,6 +52,18 @@ class MyGame(arcade.Window):
         self.player_Bc.center_x = 50
         self.player_Bc.center_y = 50
         self.player_list.append(self.player_Bc)
+
+        for i in range(COIN_COUNT):
+            # Create the coin instance
+            # Coin image from kenney.nl
+            coin = Coin("Bc2R.png", SPRITE_SCALING_COIN)
+
+            # Position the coin
+            coin.center_x = random.randrange(SCREEN_WIDTH)
+            coin.center_y = random.randrange(SCREEN_HEIGHT)
+
+            # Add the coin to the lists
+            self.coin_list.append(coin)
 
 
 
@@ -96,6 +123,11 @@ class MyGame(arcade.Window):
         arcade.draw_triangle_filled(800, 200, 900, 200, 850, 350, (42, 126, 25))
         arcade.draw_triangle_filled(800, 175, 900, 175, 850, 350, (42, 126, 25))
         self.player_list.draw()
+        self.coin_list.draw()
+
+        output = f"Score: {self.score}"
+        arcade.draw_text(output, 10, 20, arcade.color.WHITE, 14)
+
         if self.player_Bc.center_x > 1000:
             self.player_Bc.center_x = 0
             arcade.play_sound(skip_sound)
@@ -109,6 +141,16 @@ class MyGame(arcade.Window):
         # Call update on all sprites (The sprites don't do much in this
         # example though.)
         self.player_Bc.update()
+        self.coin_list.update()
+
+        # Generate a list of all sprites that collided with the player.
+        hit_list = arcade.check_for_collision_with_list(self.player_Bc,
+                                                        self.coin_list)
+
+        # Loop through each colliding sprite, remove it, and add to the score.
+        for coin in hit_list:
+            coin.remove_from_sprite_lists()
+            self.score += 1
 
 
     def on_mouse_motion(self, x, y, dx, dy):
