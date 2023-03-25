@@ -36,8 +36,6 @@ class MyGame(arcade.Window):
         self.player_Bc = arcade.Sprite(Tank, SPRITE_SCALING_PLAYER)
         self.player_Bc.center_x = 50
         self.player_Bc.center_y = 50
-        self.player_Bc.change_x = change_x
-        self.player_Bc.change_y = change_y
         self.player_list.append(self.player_Bc)
 
 
@@ -105,6 +103,12 @@ class MyGame(arcade.Window):
             self.player_Bc.center_x = 1000
             arcade.play_sound(skip_sound)
 
+    def update(self, delta_time):
+        """ Movement and game logic """
+
+        # Call update on all sprites (The sprites don't do much in this
+        # example though.)
+        self.player_Bc.update()
 
 
     def on_mouse_motion(self, x, y, dx, dy):
