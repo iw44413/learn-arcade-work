@@ -6,7 +6,7 @@ SCREEN_HEIGHT = 600
 skip_sound = arcade.load_sound("kingcrimson.mp3")
 Movement_speed = 5
 COIN_COUNT = 25
-SPRITE_SCALING_COIN = 1
+SPRITE_SCALING_COIN = 1.5
 
 
 
@@ -59,7 +59,7 @@ class MyGame(arcade.Window):
         for i in range(COIN_COUNT):
             # Create the coin instance
             # Coin image from kenney.nl
-            coin = Coin("Bc2R.png", SPRITE_SCALING_COIN)
+            coin = Coin("cream.png", SPRITE_SCALING_COIN)
 
             # Position the coin
             coin.center_x = random.randrange(SCREEN_WIDTH)
