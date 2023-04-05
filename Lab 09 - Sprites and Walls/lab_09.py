@@ -32,6 +32,37 @@ PLAYER_MOVEMENT_SPEED = 15
 
 
 
+class Player(arcade.Sprite):
+
+    def __init__(self):
+        super().__init__()
+
+
+        self.scale = SPRITE_SCALING
+
+        self.textures = []
+
+
+
+        # Load a left facing texture and a right facing texture.
+
+        # flipped_horizontally=True will mirror the image we load.
+
+        texture = arcade.load_texture("Bc1R.png")
+
+        self.textures.append(texture)
+
+        texture = arcade.load_texture("Bc1R.png",
+
+                                      flipped_horizontally=True)
+
+        self.textures.append(texture)
+
+
+
+        # By default, face right.
+
+        self.texture = texture
 
 
 class MyGame(arcade.Window):
@@ -78,9 +109,12 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.player_sprite = arcade.Sprite("Bc1R.png",
-                                           scale=2.7)
+                                           scale=2.5)
         self.player_sprite.center_x = 256
         self.player_sprite.center_y = 512
+        self.player_sprite.change_angle = False*10
+        self.player_sprite.update_animation(1/60)
+        self.player_sprite.__class__ = Player
         self.player_list.append(self.player_sprite)
 
         # -- Set up several columns of walls
