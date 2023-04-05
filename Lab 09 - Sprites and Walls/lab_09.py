@@ -27,6 +27,8 @@ CAMERA_SPEED = 0.1
 # How fast the character moves
 PLAYER_MOVEMENT_SPEED = 15
 
+coolice_sound = arcade.load_sound("fullsizerender.wav")
+
 
 
 
@@ -38,7 +40,7 @@ class Player(arcade.Sprite):
         super().__init__()
 
 
-        self.scale = SPRITE_SCALING
+        self.scale = 10
 
         self.textures = []
 
@@ -80,9 +82,11 @@ class MyGame(arcade.Window):
 
         # Set up the player
         self.player_sprite = None
+        self.player_cream = None
 
         # Physics engine so we don't run into walls.
         self.physics_engine = None
+        self.physics_engine2 = None
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -114,13 +118,21 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 512
         self.player_sprite.change_angle = False*10
         self.player_sprite.update_animation(1/60)
-        self.player_sprite.__class__ = Player
         self.player_list.append(self.player_sprite)
+
+        self.player_cream = arcade.Sprite("cream.png",
+                                           scale=.25)
+        self.player_cream.center_x = 100
+        self.player_cream.center_y
+        self.player_cream.change_y += 1000
+        self.player_cream.change_angle = True*100
+        self.player_cream.update_animation(1/60)
+        self.player_list.append(self.player_cream)
 
         # -- Set up several columns of walls
         for x in range(0, 5000, 250):
             for y in range(0, 5000, 70):
-                # Randomly skip a box so the player can find a way throug
+                # Randomly skip a box so the player can find a way through
                 if random.randrange(5) > 0:
                     wall = arcade.Sprite("Block.jpg", SPRITE_SCALING)
                     wall.center_x = x
@@ -144,7 +156,8 @@ class MyGame(arcade.Window):
                     wall.center_y = y
                     self.wall_list.append(wall)
 
-        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+        self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,self.wall_list)
+        self.physics_engine2 = arcade.PhysicsEngineSimple(self.player_cream, self.wall_list)
 
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -212,6 +225,15 @@ class MyGame(arcade.Window):
         self.player_sprite.change_x = 0
         self.player_sprite.change_y = 0
 
+        self.player_cream.change_x = 0
+        self.player_cream.change_y = 25
+
+
+        if self.player_cream.center_y > 4500:
+            self.player_cream.center_x = self.player_sprite.center_x
+            self.player_cream.center_y = 100
+            arcade.play_sound(coolice_sound)
+
         if self.up_pressed and not self.down_pressed:
             self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
         elif self.down_pressed and not self.up_pressed:
@@ -224,6 +246,7 @@ class MyGame(arcade.Window):
         # Call update on all sprites (The sprites don't do much in this
         # example though.)
         self.physics_engine.update()
+        self.physics_engine2.update()
 
 
         # Scroll the screen to the player
