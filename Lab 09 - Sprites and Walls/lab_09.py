@@ -1,12 +1,3 @@
-"""
-Scroll around a large screen.
-
-Artwork from https://kenney.nl
-
-If Python and Arcade are installed, this example can be run from the command line with:
-python -m arcade.examples.sprite_move_scrolling
-"""
-
 import random
 import arcade
 from pyglet.math import Vec2
@@ -17,55 +8,16 @@ DEFAULT_SCREEN_WIDTH = 800
 DEFAULT_SCREEN_HEIGHT = 600
 SCREEN_TITLE = "Sprite Move with Scrolling Screen Example"
 
-# How many pixels to keep as a minimum margin between the character
-# and the edge of the screen.
 VIEWPORT_MARGIN = 220
 
-# How fast the camera pans to the player. 1.0 is instant.
 CAMERA_SPEED = 0.1
 
-# How fast the character moves
 PLAYER_MOVEMENT_SPEED = 15
 
+NUMBER_OF_COINS = 5
+SPRITE_SCALING_COIN = .025
+
 coolice_sound = arcade.load_sound("fullsizerender.wav")
-
-
-
-
-
-
-class Player(arcade.Sprite):
-
-    def __init__(self):
-        super().__init__()
-
-
-        self.scale = 10
-
-        self.textures = []
-
-
-
-        # Load a left facing texture and a right facing texture.
-
-        # flipped_horizontally=True will mirror the image we load.
-
-        texture = arcade.load_texture("Bc1R.png")
-
-        self.textures.append(texture)
-
-        texture = arcade.load_texture("Bc1R.png",
-
-                                      flipped_horizontally=True)
-
-        self.textures.append(texture)
-
-
-
-        # By default, face right.
-
-        self.texture = texture
-
 
 class MyGame(arcade.Window):
     """ Main application class. """
@@ -76,9 +28,13 @@ class MyGame(arcade.Window):
         """
         super().__init__(width, height, title, resizable=True)
 
+
         # Sprite lists
         self.player_list = None
         self.wall_list = None
+        self.coin_list = None
+
+        self.score = 0
 
         # Set up the player
         self.player_sprite = None
@@ -93,6 +49,7 @@ class MyGame(arcade.Window):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
+        self.Dead = False
 
 
         # Create the cameras. One for the GUI, one for the sprites.
@@ -110,6 +67,7 @@ class MyGame(arcade.Window):
         # Sprite lists
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
+        self.coin_list = arcade.SpriteList()
 
         # Set up the player
         self.player_sprite = arcade.Sprite("Bc1R.png",
@@ -118,6 +76,7 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 512
         self.player_sprite.change_angle = False*10
         self.player_sprite.update_animation(1/60)
+        self.player_sprite.Dead = False
         self.player_list.append(self.player_sprite)
 
         self.player_cream = arcade.Sprite("cream.png",
@@ -156,20 +115,32 @@ class MyGame(arcade.Window):
                     wall.center_y = y
                     self.wall_list.append(wall)
 
+        for i in range(NUMBER_OF_COINS):
+            coin = arcade.Sprite("arrow.png", SPRITE_SCALING_COIN)
+
+            coin_placed_successfully = False
+
+            while not coin_placed_successfully:
+                coin.center_x = random.randrange(5000)
+                coin.center_y = random.randrange(5000)
+
+                wall_hit_list = arcade.check_for_collision_with_list(coin, self.wall_list)
+
+                coin_hit_list = arcade.check_for_collision_with_list(coin, self.coin_list)
+
+                if len(wall_hit_list) == 0 and len(coin_hit_list) == 0:
+                    coin_placed_successfully = True
+
+            self.coin_list.append(coin)
+
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite,self.wall_list)
         self.physics_engine2 = arcade.PhysicsEngineSimple(self.player_cream, self.wall_list)
 
-        # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
         """ Render the screen. """
-
-        # This command has to happen before we start drawing
         self.clear()
-
-
-        # Select the camera we'll use to draw all our sprites
 
         self.camera_sprites.use()
 
@@ -177,25 +148,43 @@ class MyGame(arcade.Window):
         # Draw all the sprites.
         self.wall_list.draw()
         self.player_list.draw()
+        self.coin_list.draw()
+
 
 
         # Select the (unscrolled) camera for our GUI
 
         self.camera_gui.use()
 
-
-        # Draw the GUI
         arcade.draw_rectangle_filled(self.width // 2,
                                      20,
                                      self.width,
                                      40,
                                      arcade.color.BLUE)
-        text = f"Scroll value: ({self.camera_sprites.position[0]:5.1f}, " \
-               f"{self.camera_sprites.position[1]:5.1f})"
-        arcade.draw_text(text, 10, 10, arcade.color.BLACK_BEAN, 20)
+        text = 'Arrows collected', self.score
+        arcade.draw_text(text, 10, 10, arcade.color.BLACK, 20)
+
+        if self.Dead == True:
+            arcade.draw_rectangle_filled(self.width // 2,
+                                         20,
+                                         self.width,
+                                         40,
+                                         arcade.color.BLUE)
+            text = 'YOUR DEAD'
+            arcade.draw_text(text, 10, 10, arcade.color.BLACK, 20)
+
+        if self.score == 5:
+            self.player_sprite.Dead == True
+            self.player_cream.change_y += 0
+            arcade.draw_rectangle_filled(self.width // 2,
+                                         20,
+                                         self.width,
+                                         40,
+                                         arcade.color.BLUE)
+            text = 'YOU WIN!!!!'
+            arcade.draw_text(text, 10, 10, arcade.color.BLACK, 20)
 
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed. """
 
         if key == arcade.key.UP:
             self.up_pressed = True
@@ -207,7 +196,6 @@ class MyGame(arcade.Window):
             self.right_pressed = True
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key. """
 
         if key == arcade.key.UP:
             self.up_pressed = False
@@ -219,37 +207,44 @@ class MyGame(arcade.Window):
             self.right_pressed = False
 
     def on_update(self, delta_time):
-        """ Movement and game logic """
-
-        # Calculate speed based on the keys pressed
         self.player_sprite.change_x = 0
         self.player_sprite.change_y = 0
 
         self.player_cream.change_x = 0
-        self.player_cream.change_y = 25
+        self.player_cream.change_y = 10
 
 
-        if self.player_cream.center_y > 4500:
+        if self.player_cream.center_y > 4900:
             self.player_cream.center_x = self.player_sprite.center_x
             self.player_cream.center_y = 100
             arcade.play_sound(coolice_sound)
 
-        if self.up_pressed and not self.down_pressed:
+        if self.up_pressed and not self.down_pressed and not self.Dead:
             self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
-        elif self.down_pressed and not self.up_pressed:
+        elif self.down_pressed and not self.up_pressed and not self.Dead:
             self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
-        if self.left_pressed and not self.right_pressed:
+        if self.left_pressed and not self.right_pressed and not self.Dead:
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
-        elif self.right_pressed and not self.left_pressed:
+        elif self.right_pressed and not self.left_pressed and not self.Dead:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
-        # Call update on all sprites (The sprites don't do much in this
-        # example though.)
+        hit_list = arcade.check_for_collision_with_list(self.player_cream,
+                                                        self.player_list)
+        for player in hit_list:
+            player.remove_from_sprite_lists()
+            self.Dead = True
+            self.player_cream.change_y += 0
+
+        hit_list = arcade.check_for_collision_with_list(self.player_sprite,
+                                                        self.coin_list)
+
+        # Loop through each colliding sprite, remove it, and add to the score.
+        for coin in hit_list:
+            coin.remove_from_sprite_lists()
+            self.score += 1
+
         self.physics_engine.update()
         self.physics_engine2.update()
-
-
-        # Scroll the screen to the player
 
         self.scroll_to_player()
 

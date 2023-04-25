@@ -59,7 +59,7 @@ class MyGame(arcade.Window):
         for i in range(COIN_COUNT):
             # Create the coin instance
             # Coin image from kenney.nl
-            coin = Coin("cream.png", SPRITE_SCALING_COIN)
+            coin = Coin("Bc1R.png", SPRITE_SCALING_COIN)
 
             # Position the coin
             coin.center_x = random.randrange(SCREEN_WIDTH)
