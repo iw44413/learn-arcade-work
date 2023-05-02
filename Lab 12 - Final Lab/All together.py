@@ -21,9 +21,9 @@ SPRITE_PIXEL_SIZE = 128
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING
 
 # Shooting Constants
-SPRITE_SCALING_LASER = .07
-SHOOT_SPEED = 25
-BULLET_SPEED = 20
+SPRITE_SCALING_LASER = 0.8
+SHOOT_SPEED = 15
+BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
 # Movement speed of player, in pixels per frame
@@ -81,7 +81,6 @@ class Entity(arcade.Sprite):
         self.idle_texture_pair = load_texture_pair(f"Super_idle_R1_clear.png")
         self.jump_texture_pair = load_texture_pair(f"DJump.png")
         self.fall_texture_pair = load_texture_pair(f"FALL1.png")
-        self.lasershoot_texture_pair = load_texture_pair("LaserStance.png")
 
         # Load textures for walking
         self.d4cwalk_textures = []
@@ -176,7 +175,6 @@ class PlayerCharacter(Entity):
         self.climbing = False
         self.is_on_ladder = False
         self.scale = 2
-        self.health = 100
 
     def update_animation(self, delta_time: float = 1 / 60):
 
@@ -225,7 +223,6 @@ class MainMenu(arcade.View):
     def on_show_view(self):
         """Called when switching to this view."""
         arcade.set_background_color(arcade.color.WHITE)
-        self.background = arcade.load_texture("Untitled.jpeg")
 
     def on_draw(self):
         """Draw the menu"""
@@ -417,7 +414,7 @@ class GameView(arcade.View):
         self.gui_camera.use()
 
         # Draw our score on the screen, scrolling it with the viewport
-        score_text = f"Health: {self.player_sprite.health}"
+        score_text = f"Score: {self.score}"
         arcade.draw_text(
             score_text,
             10,
@@ -543,19 +540,17 @@ class GameView(arcade.View):
             if self.shoot_pressed:
                 arcade.play_sound(self.shoot_sound)
                 bullet = arcade.Sprite(
-                    "Laser.png",
+                    ":resources:images/space_shooter/laserBlue01.png",
                     SPRITE_SCALING_LASER,
                 )
-                self.player_sprite.texture = self.player_sprite.lasershoot_texture_pair[self.player_sprite.facing_direction]
 
                 if self.player_sprite.facing_direction == RIGHT_FACING:
                     bullet.change_x = BULLET_SPEED
                 else:
                     bullet.change_x = -BULLET_SPEED
-                    bullet.center_x = self.player_sprite.center_x - 20
 
-                bullet.center_x = self.player_sprite.center_x + 20
-                bullet.center_y = self.player_sprite.center_y + 85
+                bullet.center_x = self.player_sprite.center_x
+                bullet.center_y = self.player_sprite.center_y
 
                 self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
 
@@ -647,9 +642,8 @@ class GameView(arcade.View):
 
             if self.scene[LAYER_NAME_ENEMIES] in collision.sprite_lists:
                 arcade.play_sound(self.game_over)
-                self.player_sprite.health -= 25
-                self.player_sprite.center_x -= 200
-                self.player_sprite.center_y += 100
+                game_over = GameOverView()
+                self.window.show_view(game_over)
                 return
             else:
                 # Figure out how many points this coin is worth
@@ -662,11 +656,6 @@ class GameView(arcade.View):
                 # Remove the coin
                 collision.remove_from_sprite_lists()
                 arcade.play_sound(self.collect_coin_sound)
-
-        if self.player_sprite.health <= 0:
-            game_over = GameOverView()
-            self.window.show_view(game_over)
-            return
 
         # Position the camera
         self.center_camera_to_player()
