@@ -21,7 +21,7 @@ SPRITE_PIXEL_SIZE = 128
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING
 
 # Shooting Constants
-SPRITE_SCALING_LASER = .07
+SPRITE_SCALING_LASER = 1
 SHOOT_SPEED = 25
 BULLET_SPEED = 20
 BULLET_DAMAGE = 25
@@ -69,6 +69,8 @@ class Entity(arcade.Sprite):
     def __init__(self, name_folder, name_file):
         super().__init__()
 
+        self.should_update_walk = 0
+
         # Default to facing right
         self.facing_direction = RIGHT_FACING
 
@@ -88,6 +90,13 @@ class Entity(arcade.Sprite):
         for i in range(1,8):
             texture = load_texture_pair(f"D4Cattc{i}.png")
             self.d4cwalk_textures.append(texture)
+
+         # Load textures for Shooting
+        self.shoot_textures = []
+        for i in range(1, 6):
+            texture = load_texture_pair(f"FVShoot{i}.png")
+            self.shoot_textures.append(texture)
+
 
         self.walk_textures = []
         for i in range(1, 5):
@@ -116,9 +125,10 @@ class Enemy(Entity):
         # Setup parent class
         super().__init__(name_folder, name_file)
 
-        self.should_update_walk = 1
+        self.should_update_walk = 0
         self.health = 0
         self.scale = 2.1
+        self.freeze = False
 
     def update_animation(self, delta_time: float = 1 / 60):
 
@@ -129,8 +139,12 @@ class Enemy(Entity):
             self.facing_direction = RIGHT_FACING
 
         # Idle animation
-        if self.change_x == 0:
-            self.texture = self.idle_texture_pair[self.facing_direction]
+        if self.scale == 2.7:
+            self.cur_texture += 1
+            if self.cur_texture > 4:
+                self.cur_texture = 1
+            self.texture = self.shoot_textures[self.cur_texture][self.facing_direction]
+            self.should_update_walk = 0
             return
 
         # Walking animation
@@ -141,7 +155,6 @@ class Enemy(Entity):
             self.texture = self.d4cwalk_textures[self.cur_texture][self.facing_direction]
             self.should_update_walk = 0
             return
-
         self.should_update_walk += 1
 
 
@@ -158,9 +171,37 @@ class ZombieEnemy(Enemy):
     def __init__(self):
 
         # Set up parent class
-        super().__init__("zombie", "zombie")
+        super().__init__("zombie", "zombie",)
 
         self.health = 50
+        self.scale = 2.7
+
+        def on_update(self, delta_time: float = 1 / 60):
+            """ Update this sprite. """
+
+            # Track time since we last fired
+            self.time_since_last_firing += delta_time
+
+            # If we are past the firing time, then fire
+            if self.time_since_last_firing >= self.time_between_firing:
+                # Reset timer
+                self.time_since_last_firing = 0
+
+                # Fire the bullet
+                bullet = arcade.Sprite(":resources:images/space_shooter/laserBlue01.png")
+                bullet.center_x = self.center_x
+                bullet.angle = -90
+                bullet.top = self.bottom
+                bullet.change_y = -2
+                self.bullet_list.append(bullet)
+
+class Shooter(Enemy):
+    def __init__(self):
+        self.center_x = 200
+        self.center_y = 200
+        self.change_x = 0
+        self.append.list[LAYER_NAME_ENEMIES]
+
 
 
 class PlayerCharacter(Entity):
@@ -177,6 +218,7 @@ class PlayerCharacter(Entity):
         self.is_on_ladder = False
         self.scale = 2
         self.health = 100
+        self.freeze = True
 
     def update_animation(self, delta_time: float = 1 / 60):
 
@@ -217,6 +259,9 @@ class PlayerCharacter(Entity):
         if self.cur_texture > 3:
             self.cur_texture = 1
         self.texture = self.walk_textures[self.cur_texture][self.facing_direction]
+
+        if self.health <= 50:
+            self.freeze = True
 
 
 class MainMenu(arcade.View):
@@ -538,12 +583,26 @@ class GameView(arcade.View):
         else:
             self.player_sprite.is_on_ladder = False
             self.process_keychange()
+        if  self.player_sprite.center_x < 10000:
+            arcade.play_sound(self.shoot_sound)
+            bullet = arcade.Sprite(
+                "FVbullet.png",
+                SPRITE_SCALING_LASER,
+            )
+            self.player_sprite.texture = self.player_sprite.lasershoot_texture_pair[self.player_sprite.facing_direction]
 
+            if ZombieEnemy().change_x < 0:
+                bullet.change_x = BULLET_SPEED
+            else:
+                bullet.change_x = -BULLET_SPEED
+                bullet.center_x = self.player_sprite.center_x
+
+            self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
         if self.can_shoot:
             if self.shoot_pressed:
                 arcade.play_sound(self.shoot_sound)
                 bullet = arcade.Sprite(
-                    "Laser.png",
+                    "FVbullet.png",
                     SPRITE_SCALING_LASER,
                 )
                 self.player_sprite.texture = self.player_sprite.lasershoot_texture_pair[self.player_sprite.facing_direction]
@@ -585,18 +644,20 @@ class GameView(arcade.View):
         # See if the enemy hit a boundary and needs to reverse direction.
         for enemy in self.scene[LAYER_NAME_ENEMIES]:
             if (
-                enemy.boundary_right
-                and enemy.right > enemy.boundary_right
-                and enemy.change_x > 0
+                    enemy.boundary_right
+                    and enemy.right > enemy.boundary_right
+                    and enemy.change_x > 0
             ):
                 enemy.change_x *= -1
 
             if (
-                enemy.boundary_left
-                and enemy.left < enemy.boundary_left
-                and enemy.change_x < 0
+                    enemy.boundary_left
+                    and enemy.left < enemy.boundary_left
+                    and enemy.change_x < 0
             ):
                 enemy.change_x *= -1
+
+
 
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
